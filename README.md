@@ -1,9 +1,15 @@
 # PointNetGPD: Detecting Grasp Configurations from Point Sets
 PointNetGPD (ICRA 2019, [arXiv](https://arxiv.org/abs/1809.06267)) is an end-to-end grasp evaluation model to address the challenging problem of localizing robot grasp configurations directly from the point cloud.
 
-PointNetGPD is light-weighted and can directly process the 3D point cloud that locates within the gripper for grasp evaluation. Taking the raw point cloud as input, our proposed grasp evaluation network can capture the complex geometric structure of the contact area between the gripper and the object even if the point cloud is very sparse.
-
-To further improve our proposed model, we generate a larger-scale grasp dataset with 350k real point cloud and grasps with the [YCB objects Dataset](http://ycb-benchmarks.s3-website-us-east-1.amazonaws.com/) for training.
+简单介绍一下PointNet的代码流程：  
+1. 离线阶段
+   1.  **候选抓取采样与打分：** 针对CAD模型数据集，利用传统采样方法（默认Antipods采样）对进行候选抓取姿态（夹爪6D姿态）采样，并通过Force Closure结合 WFS 方法对所检测出的姿态进行打分，并存起来备用；
+   2.  **点云原始数据生成：** 文章使用数据集是[YCB objects Dataset](http://ycb-benchmarks.s3-website-us-east-1.amazonaws.com/) ，这个数据集提供了一些物体的CAD模型，以及某些视角下这些物体的激光深度图，但是我们在训练网络时候，使用的是点云数据，因此，这里提前要把某些视角下的深度图转换为点云数据，后续使用；
+   3.  **PointNet模型训练：** 根据步骤1.i中生成的夹爪姿态，结合步骤1.ii生成的多视角点云，提取出来夹爪内部的点云； 送入PointNet中的数据是 某候选夹爪姿态的分数g以及该夹爪姿态下夹爪内部点云点集合；
+2. 在线阶段  
+   1. [从点云中直接采样候选抓取姿态](https://www.researchgate.net/publication/318107041_Grasp_Pose_Detection_in_Point_Clouds) ，并剔除掉与桌面碰撞、与场景点云碰撞的非法抓取；
+   2. 提取剩余的抓取姿态夹爪内部的点，进一步剔除掉不合理的数据之后，将点集送入训练好的PointNet网络中打分；
+   3. 将候选的抓取按照分数从高到低排序，输出分数最高的抓取；
 
 <img src="data/grasp_pipeline.svg" width="100%">
 
@@ -76,7 +82,7 @@ cd $HOME/code/
     "init_bite":  这个是用于在线抓取检测时，定义的一个后撤距离，主要是避免由于点云误差之类的，导致夹爪和物体碰撞，以米为单位，一般设置1cm就行了
     ```
     ```params.json```参数的具体定义示意图，修改后的本代码，离线的夹爪参数仅作为候选抓取姿态的采样，而不涉及到夹爪内部的提取。
-    
+
     ![在线检测时的夹爪各项参数定义](data/在线检测时的夹爪各项参数定义.png "在线检测时的夹爪各项参数定义")
 
     ![在线检测时的夹爪数学模型各点以及夹爪坐标系定义](data/在线检测时的夹爪数学模型各点以及夹爪坐标系定义.png  "在线检测时的夹爪数学模型各点以及夹爪坐标系定义")  
