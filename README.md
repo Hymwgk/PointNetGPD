@@ -11,7 +11,7 @@ To further improve our proposed model, we generate a larger-scale grasp dataset 
 
 [![Video for PointNetGPD](https://img.youtube.com/vi/RBFFCLiWhRw/0.jpg )](https://www.youtube.com/watch?v=RBFFCLiWhRw)
 ## Before Install
-All the code should be installed in the following directory:
+在使用前，clone的代码文件夹需要放在如下的code文件夹中:
 ```
 mkdir -p $HOME/code/
 cd $HOME/code/
@@ -19,50 +19,61 @@ cd $HOME/code/
 ## Install all the requirements (Using a virtual environment is recommended)
 1. Make sure in your Python environment do not have same package named ```meshpy``` or ```dexnet```.
 
-1. Clone this repository:
+2. Clone this repository:
     ```bash
     cd $HOME/code
     git clone https://github.com/lianghongzhuo/PointNetGPD.git
     ```
 
-1. Install our requirements in `requirements.txt`
+3. Install our requirements in `requirements.txt`
     ```bash
     cd $HOME/code/PointNetGPD
     pip install -r requirements.txt
     ```
-1. Install our modified meshpy (Modify from [Berkeley Automation Lab: meshpy](https://github.com/BerkeleyAutomation/meshpy))
+4. Install our modified meshpy (Modify from [Berkeley Automation Lab: meshpy](https://github.com/BerkeleyAutomation/meshpy))
     ```bash
     cd $HOME/code/PointNetGPD/meshpy
     python setup.py develop
     ```
 
-1. Install our modified dex-net (Modify from [Berkeley Automation Lab: dex-net](https://github.com/BerkeleyAutomation/dex-net))
+5. Install our modified dex-net (Modify from [Berkeley Automation Lab: dex-net](https://github.com/BerkeleyAutomation/dex-net))
     ```bash
     cd $HOME/code/PointNetGPD/dex-net
     python setup.py develop
     ```
-1. Modify the gripper configurations to your own gripper
+6. 这里需要根据自己的夹爪来修改如下的夹爪文件；  
+    你可以模仿着新建一个文件夹，也可以直接在这个文件中修改，之后离线与在线节点的夹爪姿态检测都会根据夹爪具体的尺寸来生成。
     ```bash
     vim $HOME/code/PointNetGPD/dex-net/data/grippers/robotiq_85/params.json
     ```
-    These parameters are used for dataset generation：
+    离线阶段用到的参数，（默认）通过antipod采样法对CAD模型数据集中的模型进行抓取姿态的采样时候用到的参数，在作者的代码中，这部分的参数一共有两点作用：  
+    >- 离线生成抓取姿态数据集时，用此参数结合antipod采样法对CAD模型数据集中的模型进行抓取姿态的采样；
+    >- 离线训练PointNet时，在dataloader中，使用该参数对提取夹爪内部的部分点云，进而将该部分点云送入网络进行训练；  
+  
+    **但是**个人在看代码的过程中，发现第二点的作用是不合适的：
+    >对PointNet训练和使用时，应该保证离线训练时的点云采样方式尽可能和在线点云采样方式相同，这样网络输出的结果将会更好；  
+    如果希望提取某姿态下夹爪内部点云，就需要根据给定的夹爪尺寸对夹爪建立尺寸数学模型；  
+    而原始代码中，离线提取夹爪内部点云使用的夹爪数学模型和在线提取点云时使用的夹爪数学模型是不同的，分别使用了两种构建形式，并且在线和离线的夹爪参数不太一致，本修改代码中，仅在抓取姿态数据集生成阶段使用了离线参数；  
+    将在线夹爪内部提取时的夹爪数学模型替换为和离线训练PointNet时dataloader中相同的数学模型。
+
+
     ```bash
-    "min_width":
-    "force_limit":
-    "max_width":
-    "finger_radius":
-    "max_depth":
+    "min_width":      夹爪的最小闭合角度
+    "force_limit":      抓取力度限制
+    "max_width":     夹爪最大张开距离
+    "finger_radius": 用于软体手，指定软体手的弯曲角度（弧度制），一般用不到，补上去就行了
+    "max_depth":     夹爪的最大深度，竖向的距离
     ```
     These parameters are used for grasp pose generation at experiment:
     ```bash
-    "finger_width":
-    "real_finger_width":
-    "hand_height":
-    "hand_height_two_finger_side":
-    "hand_outer_diameter":
-    "hand_depth":
-    "real_hand_depth":
-    "init_bite":
+    "finger_width":    夹持器的两个夹爪的“厚度”
+    "real_finger_width":   也是两个夹爪的厚度，和上面写一样就行（仅仅用于显示，影响不大，不用于姿态检测）
+    "hand_height":   夹爪的另一侧厚度，一会儿看图
+    "hand_height_two_finger_side":   没有用到，代码中没有找到调用，所以不用管
+    "hand_outer_diameter":  夹爪最大的可以张开的距离，从最外侧量（包括两个爪子的厚度）
+    "hand_depth":   夹爪的竖向深度
+    "real_hand_depth":   和hand_depth保持一致，代码中两者是相同的
+    "init_bite":  这个是用于在线抓取检测时，定义的一个后撤距离，主要是避免由于点云误差之类的，导致夹爪和物体碰撞，以米为单位，一般设置1cm就行了
     ```
 
 ## Genearted Grasp Dataset Download
@@ -112,7 +123,7 @@ You can download the dataset from: https://tams.informatik.uni-hamburg.de/resear
     python setup.py develop
     ```
     - If you use **ubuntu 18.04** and/or **conda environment**, you may encounter a compile error when install python-pcl, this is because conda has a higer version of vtk, here is a work around:
-        - `conda install vtk` or ``pip install vtk`
+        - `conda install vtk` or `pip install vtk`
         - Use my fork: https://github.com/lianghongzhuo/python-pcl.git
 5. Generate sdf file for each nontextured.obj file using SDFGen by running:
     ```bash
