@@ -7,9 +7,9 @@ PointNetGPD (ICRA 2019, [arXiv](https://arxiv.org/abs/1809.06267)) is an end-to-
    2.  **点云原始数据生成：** 文章使用数据集是[YCB objects Dataset](http://ycb-benchmarks.s3-website-us-east-1.amazonaws.com/) ，这个数据集提供了一些物体的CAD模型，以及某些视角下这些物体的激光深度图，但是我们在训练网络时候，使用的是点云数据，因此，这里提前要把某些视角下的深度图转换为点云数据，后续使用；
    3.  **PointNet模型训练：** 根据步骤1.i中生成的夹爪姿态，结合步骤1.ii生成的多视角点云，提取出来夹爪内部的点云； 送入PointNet中的数据是 某候选夹爪姿态的分数g以及该夹爪姿态下夹爪内部点云点集合；
 2. 在线阶段  
-   1. [从点云中直接采样候选抓取姿态](https://www.researchgate.net/publication/318107041_Grasp_Pose_Detection_in_Point_Clouds) ，并剔除掉与桌面碰撞、与场景点云碰撞的非法抓取；
-   2. 提取剩余的抓取姿态夹爪内部的点，进一步剔除掉不合理的数据之后，将点集送入训练好的PointNet网络中打分；
-   3. 将候选的抓取按照分数从高到低排序，输出分数最高的抓取；
+   1. **抓取采样：** [从点云中直接采样候选抓取姿态](https://www.researchgate.net/publication/318107041_Grasp_Pose_Detection_in_Point_Clouds) ，并剔除掉与桌面碰撞、与场景点云碰撞的非法抓取；
+   2. **打分：** 提取剩余的抓取姿态夹爪内部的点，进一步剔除掉不合理的数据之后，将点集送入训练好的PointNet网络中打分；
+   3. **排序：** 将候选的抓取按照分数从高到低排序，输出分数最高的抓取；
 
 <img src="data/grasp_pipeline.svg" width="100%">
 
