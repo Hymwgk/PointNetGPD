@@ -9,7 +9,7 @@ PointNetGPD (ICRA 2019, [arXiv](https://arxiv.org/abs/1809.06267)) is an end-to-
 2. 在线阶段  
    1. **抓取采样：** [从点云中直接采样候选抓取姿态](https://www.researchgate.net/publication/318107041_Grasp_Pose_Detection_in_Point_Clouds) ，并剔除掉与桌面碰撞、与场景点云碰撞的非法抓取；
    2. **打分：** 提取剩余的抓取姿态夹爪内部的点，进一步剔除掉不合理的数据之后，将点集送入训练好的PointNet网络中打分；
-   3. **排序：** 将候选的抓取按照分数从高到低排序，输出分数最高的抓取；
+   3. **排序：** 将候选的抓取按照分数从高到低排序，输出分数最高的抓取。
 
 <img src="data/grasp_pipeline.svg" width="100%">
 
