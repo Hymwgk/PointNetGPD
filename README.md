@@ -88,11 +88,12 @@ cd $HOME/code/
     ![在线检测时的夹爪数学模型各点以及夹爪坐标系定义](data/在线检测时的夹爪数学模型各点以及夹爪坐标系定义.png  "在线检测时的夹爪数学模型各点以及夹爪坐标系定义")  
 
 ## Genearted Grasp Dataset Download
-You can download the dataset from: https://tams.informatik.uni-hamburg.de/research/datasets/PointNetGPD_grasps_dataset.zip
+You can download the dataset from: https://tams.informatik.uni-hamburg.de/research/datasets/PointNetGPD_grasps_dataset.zip  
+这里给出的数据集是根据roboticq85夹爪离线生成的候选抓取姿态，而不是点云。
 
 ## Generate Your Own Grasp Dataset
 
-1. Download YCB object set from [YCB Dataset](http://ycb-benchmarks.s3-website-us-east-1.amazonaws.com/).
+1. Download YCB object set from [YCB Dataset](http://ycb-benchmarks.s3-website-us-east-1.amazonaws.com/). 
 2. Manage your dataset here:
     ```bash
     mkdir -p $HOME/dataset/ycb_meshes_google/objects
@@ -135,7 +136,9 @@ You can download the dataset from: https://tams.informatik.uni-hamburg.de/resear
     ```
     - If you use **ubuntu 18.04** and/or **conda environment**, you may encounter a compile error when install python-pcl, this is because conda has a higer version of vtk, here is a work around:
         - `conda install vtk` or `pip install vtk`
-        - Use my fork: https://github.com/lianghongzhuo/python-pcl.git
+        - Use my fork: https://github.com/lianghongzhuo/python-pcl.git  
+  
+  
 5. Generate sdf file for each nontextured.obj file using SDFGen by running:
     ```bash
     cd $HOME/code/PointNetGPD/dex-net/apps
@@ -215,29 +218,58 @@ This code will check the norm calculated by meshpy and pcl library.
 
 ## Using the trained network
 
-1. Get UR5 robot state:
+需要注意的是，作者没有解释点云
 
-    Goal of this step is to publish a ROS parameter tell the environment whether the UR5 robot is at home position or not.
+使用的场景点云是经过旋转变化了的，桌面上贴有一个二维码标签；由相机获得的场景点云并不能直接用在本代码中，而是先被预处理之后，旋转到了桌面标签坐标系中
+1. 启动Kinect相机  
+    ```bash
+    roslaunch kinect2_bridge kinect2_bridge.launch publish_tf:=true
     ```
-    cd $HOME/code/PointNetGPD/dex-net/apps
-    python get_ur5_robot_state.py
+2. [点云采集与预处理](https://github.com/Hymwgk/point_cloud_process)
+
+    >1. 采集点云（读取ROS话题即可），保留感兴趣区域点云（ROI）;
+    >1. 利用ROS_tf读取桌面标签与相机标签坐标系关系，从而将感兴趣区域点云转换到桌面标签坐标系中;
+    >1. 将旋转后的点云以ROS话题形式发布（父坐标系为桌面标签）
+    
+    - 安装
+    ```bash
+    cd  ~/catkin_ws/src
+    git clone https://github.com/Hymwgk/point_cloud_process.git
+    cd ..
+    catkin build
     ```
-2. Run perception code:
-    This code will take depth camera ROS info as input, and gives a set of good grasp candidates as output.
-    All the input, output messages are using ROS messages.
+    - 使用 
+    ```bash
+    roslaunch point_cloud_process marker_track.launch
+    rosrun point_cloud_process get_table_points ~/catkin_ws/src/point_cloud_process/config/prepocess_prarm.txt
+    ```
+
+3. 获取机械臂当前状态  
+    向ROS参数服务器发布一个参数，指明机械臂的当前是在移动状态还是已经返回home状态，机械臂在移动时，将暂时禁止gpd。
+    ```
+    cd $HOME/code/PointNetGPD/dex-net/apps  
+    python get_panda_state.py
+    ```
+4. 运行感知节点  
+    这部分就是实际使用PointNetGPD的部分，读取预处理后桌面上的目标区域点云，基于点云进行gpg，之后将夹爪内部的点云送入pointNet中打分，并以ROS消息的形式输出good grasp
+
+
     ```
     cd $HOME/code/PointNetGPD/dex-net/apps
     python kinect2grasp.py
 
     arguments:
     -h, --help                 show this help message and exit
-    --cuda                     using cuda for get the network result
-    --gpu GPU                  set GPU number
-    --load-model LOAD_MODEL    set witch model you want to use (rewrite by model_type, do not use this arg)
-    --show_final_grasp         show final grasp using mayavi, only for debug, not working on multi processing
-    --tray_grasp               not finished grasp type
-    --using_mp                 using multi processing to sample grasps
-    --model_type MODEL_TYPE    selet a model type from 3 existing models
+    --cuda                     使用CUDA进行计算
+    --gpu GPU                  指定使用的GPU编号
+    --load-model LOAD_MODEL    设置使用了哪个训练好的网络 (这个参数其实没有效果，被后面的model_type MODEL_TYPE覆盖了)
+    --show_final_grasp         设置是否显示最终抓取（修改了多线程不显示的问题）
+    --tray_grasp               not finished grasp type（还没搞好）
+    --using_mp                 是否使用多线程去进行抓取采样
+    --model_type MODEL_TYPE    从三种模型中选择使用哪个模型
+
+    举个栗子：
+    python kinect2grasp.py  --cuda  --gpu  0  --load-model  ../data/1v_500_2class_ourway2sample.model   --using_mp   --model_type   750
     ```
 
 ## Citation
