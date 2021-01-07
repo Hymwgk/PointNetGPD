@@ -17,8 +17,8 @@ PointNetGPD (ICRA 2019, [arXiv](https://arxiv.org/abs/1809.06267)) is an end-to-
 - 作者的实验视频  
 [![Video for PointNetGPD](https://img.youtube.com/vi/RBFFCLiWhRw/0.jpg )](https://www.youtube.com/watch?v=RBFFCLiWhRw)
 - 本人的复现实验视频  
-[![PointNetGPD on Franka Panda](https://www.youtube.com/watch?v=OfvJ-HpKjI4&t=63s&ab_channel=Hymwgk/0.jpg )](https://www.youtube.com/watch?v=OfvJ-HpKjI4&t=63s&ab_channel=Hymwgk)  
-在实验中发现，成功率并不高，不过个人感觉应该是受到了手眼标定的精度以及panda夹爪构型的影响（panda夹爪的深度比较浅，最大张开距离也比较小）
+[![PointNetGPD on Franka Panda](https://img.youtube.com/vi/OfvJ-HpKjI4/0.jpg)](https://www.youtube.com/watch?v=OfvJ-HpKjI4)  
+在实验中发现，gpd效果还是很不错的；但是夹爪经常撞到目标物体上，这是受到了手眼标定的精度以及panda夹爪构型的影响（panda夹爪的深度比较浅，最大张开距离也比较小）
 ## Before Install
 在使用前，clone的代码文件夹需要放在如下的code文件夹中:
 ```
