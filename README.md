@@ -3,9 +3,9 @@ PointNetGPD (ICRA 2019, [arXiv](https://arxiv.org/abs/1809.06267)) is an end-to-
 
 简单介绍一下PointNet的代码流程：  
 1. 离线阶段
-   1.  **候选抓取采样与打分：** 针对CAD模型数据集，利用传统采样方法（默认Antipods采样）对进行候选抓取姿态（夹爪6D姿态）采样，并通过Force Closure结合 WFS 方法对所检测出的姿态进行打分，并存起来备用；
-   2.  **点云原始数据生成：** 文章使用数据集是[YCB objects Dataset](http://ycb-benchmarks.s3-website-us-east-1.amazonaws.com/) ，这个数据集提供了一些物体的CAD模型，以及某些视角下这些物体的激光深度图，但是我们在训练网络时候，使用的是点云数据，因此，这里提前要把某些视角下的深度图转换为点云数据，后续使用；
-   3.  **PointNet模型训练：** 根据步骤1.i中生成的夹爪姿态，结合步骤1.ii生成的多视角点云，提取出来夹爪内部的点云； 送入PointNet中的数据是 某候选夹爪姿态的分数g以及该夹爪姿态下夹爪内部点云点集合；
+   1.  **候选抓取采样与打分：** 针对[YCB objects Dataset](http://ycb-benchmarks.s3-website-us-east-1.amazonaws.com/) 中的CAD模型，利用传统采样方法（默认Antipods采样）对进行候选抓取姿态（夹爪6D姿态）采样，并通过Force Closure结合 GWS 方法对所检测出的姿态进行打分，生成候选抓取数据集存起来备用；
+   2.  **点云原始数据生成：** [YCB objects Dataset](http://ycb-benchmarks.s3-website-us-east-1.amazonaws.com/) 提供了一些物体的CAD模型，以及某些视角下这些物体的激光深度图；但是我们在训练网络时候，使用的是点云数据，因此，这里提前要把某些视角下的深度图转换为点云数据，以备后续使用；
+   3.  **PointNet模型训练：** 利用生成的某候选夹爪姿态（步骤1.i），结合CAD模型的多视角点云（步骤1.ii），提取出来该候选抓取姿态下夹爪闭合区域内的点云；将夹爪闭合区域内的点云以及该抓取姿态的分数送入PointNet中进行训练；
 2. 在线阶段  
    1. **抓取采样：** [从点云中直接采样候选抓取姿态](https://www.researchgate.net/publication/318107041_Grasp_Pose_Detection_in_Point_Clouds) ，并剔除掉与桌面碰撞、与场景点云碰撞的非法抓取；
    2. **打分：** 提取剩余的抓取姿态夹爪内部的点，进一步剔除掉不合理的数据之后，将点集送入训练好的PointNet网络中打分；
@@ -14,8 +14,11 @@ PointNetGPD (ICRA 2019, [arXiv](https://arxiv.org/abs/1809.06267)) is an end-to-
 <img src="data/grasp_pipeline.svg" width="100%">
 
 ## Video
-
+- 作者的实验视频  
 [![Video for PointNetGPD](https://img.youtube.com/vi/RBFFCLiWhRw/0.jpg )](https://www.youtube.com/watch?v=RBFFCLiWhRw)
+- 本人的复现实验视频  
+[![PointNetGPD on Franka Panda](https://www.youtube.com/watch?v=OfvJ-HpKjI4&t=63s&ab_channel=Hymwgk/0.jpg )](https://www.youtube.com/watch?v=OfvJ-HpKjI4&t=63s&ab_channel=Hymwgk)  
+在实验中发现，成功率并不高，不过个人感觉应该是受到了手眼标定的精度以及panda夹爪构型的影响（panda夹爪的深度比较浅，最大张开距离也比较小）
 ## Before Install
 在使用前，clone的代码文件夹需要放在如下的code文件夹中:
 ```
@@ -70,7 +73,7 @@ cd $HOME/code/
     "finger_radius": 用于软体手，指定软体手的弯曲角度（弧度制），一般用不到，补上去就行了
     "max_depth":     夹爪的最大深度，竖向的距离
     ```
-    These parameters are used for grasp pose generation at experiment:
+    以下是在线检测部分所需要的参数:
     ```bash
     "finger_width":    夹持器的两个夹爪的“厚度”
     "real_finger_width":   也是两个夹爪的厚度，和上面写一样就行（仅仅用于显示，影响不大，不用于姿态检测）
@@ -94,11 +97,27 @@ You can download the dataset from: https://tams.informatik.uni-hamburg.de/resear
 ## Generate Your Own Grasp Dataset
 
 1. Download YCB object set from [YCB Dataset](http://ycb-benchmarks.s3-website-us-east-1.amazonaws.com/). 
-2. Manage your dataset here:
+2. 原代码中，将YCB的数据集放在了如下位置:
     ```bash
     mkdir -p $HOME/dataset/ycb_meshes_google/objects
-    ```
-    Every object should have a folder, structure like this:
+    ```  
+    如果你的Home盘分区不够大，希望换一个位置，可以:  
+    >```bash
+    >cd $HOME/code/PointNetGPD/dex-net/apps  
+    >vim generate-dataset-canny.py
+    >```  
+    >修改YCB dataset 路径
+    >```python
+    >219  #存放CAD模型的文件夹
+    >220  file_dir = home_dir + "/dataset/ycb_meshes_google/objects"   #获取模型的路径  
+    >```
+    >也可以修改计算结果文件的存放位置
+    >```python
+    >61  #将gpg得到的候选抓取文件存放起来
+    >62  good_grasp_file_name = "/home/wgk/win10/generated_grasps/{}_{}_{}".format(filename_prefix, str(object_name), str(len(good_grasp)))
+    >```
+
+    每个物体的文件夹结构都应该如下所示:
     ```bash
     ├002_master_chef_can
     |└── google_512k
@@ -142,20 +161,20 @@ You can download the dataset from: https://tams.informatik.uni-hamburg.de/resear
 5. Generate sdf file for each nontextured.obj file using SDFGen by running:
     ```bash
     cd $HOME/code/PointNetGPD/dex-net/apps
-    python read_file_sdf.py
+    python read_file_sdf.py  #anaconda3环境下python3
     ```
-6. Generate dataset by running the code:
+6. 运行以下代码生成关于CAD模型的候选抓取姿态,以及利用ForceClosure&GWS对生成抓取姿态进行打分:
     ```bash
     cd $HOME/code/PointNetGPD/dex-net/apps
-    python generate-dataset-canny.py [prefix]
+    python generate-dataset-canny.py [prefix]   #anaconda3环境下python3
     ```
-    where ```[prefix]``` is the optional, it will add a prefix on the generated files.
+    这里的`[prefix]`可以根据自己的夹爪类型，添加一个标签，也可以选择不加，那么就会自动被替换成为`default`
 
 ## Visualization tools
 - Visualization grasps
     ```bash
     cd $HOME/code/PointNetGPD/dex-net/apps
-    python read_grasps_from_file.py
+    python read_grasps_from_file.py    #anaconda3  python3
     ```
     Note:
     - This file will visualize the grasps in `$HOME/code/PointNetGPD/PointNetGPD/data/ycb_grasp/` folder
@@ -163,7 +182,7 @@ You can download the dataset from: https://tams.informatik.uni-hamburg.de/resear
 - Visualization object normals
     ```bash
     cd $HOME/code/PointNetGPD/dex-net/apps
-    python Cal_norm.py
+    python Cal_norm.py     #anaconda3  python3
     ```
 This code will check the norm calculated by meshpy and pcl library.
 
@@ -185,7 +204,7 @@ This code will check the norm calculated by meshpy and pcl library.
     Generate point cloud from rgb-d image, you may change the number of process running in parallel if you use a shared host with others
     ```bash
     cd ..
-    python ycb_cloud_generate.py
+    python ycb_cloud_generate.py   #anaconda3  python3
     ```
     Note: Estimated running time at our `Intel(R) Xeon(R) CPU E5-2690 v4 @ 2.60GHz` dual CPU with 56 Threads is 36 hours. Please also remove objects beyond the capacity of the gripper.
 
@@ -200,12 +219,12 @@ This code will check the norm calculated by meshpy and pcl library.
     ```
 
     and run an experiment for 200 epoch
-    ```
-    python main_1v.py --epoch 200 --mode train --batch-size x (x>1)
+    ```bash
+    python main_1v.py --epoch 200 --mode train --batch-size x (x>1)  #anaconda3  pyhton3
     ```
 
     File name and corresponding experiment:
-    ```
+    ```bash
     main_1v.py        --- 1-viewed point cloud, 2 class
     main_1v_mc.py     --- 1-viewed point cloud, 3 class
     main_1v_gpd.py    --- 1-viewed point cloud, GPD
@@ -246,17 +265,17 @@ This code will check the norm calculated by meshpy and pcl library.
 
 3. 获取机械臂当前状态  
     向ROS参数服务器发布一个参数，指明机械臂的当前是在移动状态还是已经返回home状态，机械臂在移动时，将暂时禁止gpd。
-    ```
+    ```bash
     cd $HOME/code/PointNetGPD/dex-net/apps  
-    python get_panda_state.py
+    python get_panda_state.py   #anaconda2  python2
     ```
 4. 运行感知节点  
     这部分就是实际使用PointNetGPD的部分，读取预处理后桌面上的目标区域点云，基于点云进行gpg，之后将夹爪内部的点云送入pointNet中打分，并以ROS消息的形式输出good grasp
 
 
-    ```
+    ```bash
     cd $HOME/code/PointNetGPD/dex-net/apps
-    python kinect2grasp.py
+    python kinect2grasp.py   #anaconda2  python2
 
     arguments:
     -h, --help                 show this help message and exit
