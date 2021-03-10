@@ -4,7 +4,7 @@
 # E-mail     : liang@informatik.uni-hamburg.de
 # Description: 主要是为了获取机械臂当前的状态，通过ros实时获取夹爪当前的姿态，看夹爪是否位于home状态
 #如果使用panda等机器人，就需要直接在shell中运行这个程序，不能在anconda中运行，其实也不是不可以，但是每个都要提前运行一个
-#baxter.sh脚本
+#panda_clinet.sh脚本
 # Date       : 08/09/2018 12:00 AM
 # File Name  : get_ur5_robot_state.py
 #python 2
