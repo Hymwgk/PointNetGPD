@@ -59,7 +59,7 @@ def do_job(i):      #处理函数  处理第i个模型
     #执行worker，将采样的抓取结果放到good_grasp中
     worker(i, 100, 20, good_grasp)
     #将gpg得到的候选抓取文件存放起来
-    good_grasp_file_name = "/home/wgk/win10/generated_grasps/{}_{}_{}".format(filename_prefix, str(object_name), str(len(good_grasp)))
+    good_grasp_file_name =  "./generated_grasps/{}_{}_{}".format(filename_prefix, str(object_name), str(len(good_grasp)))
     
     #创建一个pickle文件，将good_grasp保存起来
     with open(good_grasp_file_name + '.pickle', 'wb') as f:

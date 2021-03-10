@@ -2,7 +2,10 @@
 typora-root-url: ./
 ---
 
-# PointNetGPD: Detecting Grasp Configurations from Point Sets
+# PointNetGPD: Detecting Grasp Configurations from Point Set
+
+感谢原作者开源：https://github.com/lianghongzhuo/PointNetGPD
+
 PointNetGPD (ICRA 2019, [arXiv](https://arxiv.org/abs/1809.06267)) is an end-to-end grasp evaluation model to address the challenging problem of localizing robot grasp configurations directly from the point cloud.
 
 简单介绍一下PointNet的代码流程：  
@@ -25,6 +28,12 @@ PointNetGPD (ICRA 2019, [arXiv](https://arxiv.org/abs/1809.06267)) is an end-to-
 - 本人的复现实验视频（未加速） 
 [![PointNetGPD on Franka Panda](https://img.youtube.com/vi/OfvJ-HpKjI4/0.jpg)](https://www.youtube.com/watch?v=OfvJ-HpKjI4)  
 在实验中发现，gpd效果还是很不错的；但是夹爪经常撞到目标物体上，这是受到了手眼标定的精度以及panda夹爪构型的影响（panda夹爪的深度比较浅，最大张开距离也比较小）
+## 关于数据集
+
+代码中数据集的生成部分比较混乱，这里解释一下具体数据集的生成逻辑
+
+
+
 ## Before Install
 在使用前，clone的代码文件夹需要放在如下的code文件夹中:
 ```bash
@@ -98,13 +107,11 @@ cd $HOME/code/
 <img src="data/在线检测时的夹爪各项参数定义.png" alt="在线检测时的夹爪各项参数定义" title="在线检测时的夹爪各项参数定义" style="zoom: 67%;" />
     <img src="data/在线检测时的夹爪数学模型各点以及夹爪坐标系定义.png" alt="在线检测时的夹爪数学模型各点以及夹爪坐标系定义" title="在线检测时的夹爪数学模型各点以及夹爪坐标系定义" style="zoom:67%;" />  
 
-## Genearted Grasp Dataset Download
-You can download the dataset from: https://tams.informatik.uni-hamburg.de/research/datasets/PointNetGPD_grasps_dataset.zip  
-这里给出的数据集是根据roboticq85夹爪离线生成的候选抓取姿态，而不是点云。
 
-## Generate Your Own Grasp Dataset
 
-1. Download YCB object set from [YCB Dataset](http://ycb-benchmarks.s3-website-us-east-1.amazonaws.com/). 
+## 对YCB数据集的CAD模型进行候选抓取姿态采样
+
+1. 下载 YCB object set from [YCB Dataset](http://ycb-benchmarks.s3-website-us-east-1.amazonaws.com/)，该数据集提供了物体的CAD模型和一定角度下的深度图；
 2. 原代码中，将YCB的数据集放在了如下位置:
     ```bash
     mkdir -p $HOME/dataset/ycb_meshes_google/objects
@@ -122,7 +129,7 @@ You can download the dataset from: https://tams.informatik.uni-hamburg.de/resear
     >也可以修改计算结果文件的存放位置
     >```python
     >61  #将gpg得到的候选抓取文件存放起来
-    >62  good_grasp_file_name = "/home/wgk/win10/generated_grasps/{}_{}_{}".format(filename_prefix, str(object_name), str(len(good_grasp)))
+    >62  good_grasp_file_name =  "./generated_grasps/{}_{}_{}".format(filename_prefix, str(object_name), str(len(good_grasp)))
     >```
 
     每个物体的文件夹结构都应该如下所示:
@@ -151,7 +158,7 @@ You can download the dataset from: https://tams.informatik.uni-hamburg.de/resear
     cd SDFGen
     sudo sh install.sh
     ```
-4. Install python pcl library [python-pcl](https://github.com/strawlab/python-pcl):
+4. 安装python pcl library [python-pcl](https://github.com/strawlab/python-pcl)，python pcl在离线训练(python3)和在线pgd(python2)时均有使用:
     ```bash
     git clone https://github.com/strawlab/python-pcl.git
     pip install --upgrade pip
@@ -162,8 +169,8 @@ You can download the dataset from: https://tams.informatik.uni-hamburg.de/resear
     python setup.py develop
     ```
     - If you use **ubuntu 18.04** and/or **conda environment**, you may encounter a compile error when install python-pcl, this is because conda has a higer version of vtk, here is a work around:
-        - `conda install vtk` or `pip install vtk`
-        - Use my fork: https://github.com/lianghongzhuo/python-pcl.git  
+        1. `conda install vtk` or `pip install vtk`
+        2. Use my fork: https://github.com/lianghongzhuo/python-pcl.git  
 
 
 5. Generate sdf file for each nontextured.obj file using SDFGen by running:
@@ -171,67 +178,83 @@ You can download the dataset from: https://tams.informatik.uni-hamburg.de/resear
     cd $HOME/code/PointNetGPD/dex-net/apps
     python read_file_sdf.py  #anaconda3环境下python3
     ```
-6. 运行以下代码生成关于CAD模型的候选抓取姿态,以及利用ForceClosure&GWS对生成抓取姿态进行打分:
+    
+6. 采样关于CAD模型的候选抓取姿态,以及利用ForceClosure&GWS对生成抓取姿态进行打分，这部分的执行时间极长，主要花费时间在抓取采样之上：
     ```bash
     cd $HOME/code/PointNetGPD/dex-net/apps
     python generate-dataset-canny.py [prefix]   #anaconda3环境下python3
     ```
-    这里的`[prefix]`可以根据自己的夹爪类型，添加一个标签，也可以选择不加，那么就会自动被替换成为`default`
-
-## Visualization tools
-- Visualization grasps
-    ```bash
-    cd $HOME/code/PointNetGPD/dex-net/apps
-    python read_grasps_from_file.py    #anaconda3  python3
-    ```
-    Note:
+    计算结束后将会把结果以`.npy`文件形式保存在默认的`$HOME/code/PointNetGPD/dex-net/apps/generated_grasps`路径下；这里的`[prefix]`可以根据自己的夹爪类型，添加一个标签，也可以选择不加，那么就会自动被替换成为`default`
     
-- This file will visualize the grasps in `$HOME/code/PointNetGPD/PointNetGPD/data/ycb_grasp/` folder
-  
-- Visualization object normals
-    ```bash
-    cd $HOME/code/PointNetGPD/dex-net/apps
-    python Cal_norm.py     #anaconda3  python3
-    ```
-This code will check the norm calculated by meshpy and pcl library.
+7. 作者还给出了一个根据roboticq85夹爪模型采样好的候选grasp pose结果文件: https://tams.informatik.uni-hamburg.de/research/datasets/PointNetGPD_grasps_dataset.zip  
 
-## Training the network
-1. Data prepare:
+
+## 对YCB数据集中各个视角的深度图像生成点云
+
+1. 将下载的YCB数据集文件夹`ycb_rgbd`拷贝至如下路径
+
+   ```bash
+   cp  .../ycb_rgbd   $HOME/code/PointNetGPD/PointNetGPD/data/
+   ```
+
+2. 将YCB数据集中的深度图转换为点云数据，生成的点云将默认放在`$HOME/code/PointNetGPD/PointNetGPD/data/ycb_rgbd/*/clouds`文件夹中。
+
+   ```bash
+   cd $HOME/code/PointNetGPD/PointNetGPD/
+   python ycb_cloud_generate.py   #anaconda3  python3
+   ```
+
+
+
+## 准备Dataloader需要的数据文件夹
+
+​	需要将刚才生成的候选grasp pose还有各视角下的点云文件放在同一个文件夹下，该文件夹将会提供给PointNet的Dataloader，该Dataloader将会在训练时结合候选grasp pose&点云 提取“夹爪内部的点云”（详细解释见作者论文）
+
+1. 进入Dataloader需要的文件夹:
+
     ```bash
     cd $HOME/code/PointNetGPD/PointNetGPD/data
     ```
 
-    Make sure you have the following files, The links to the dataset directory should add by yourself:
+    确保该文件夹下有如下文件
     ```
     ├── google2cloud.csv  (Transform from google_ycb model to ycb_rgbd model)
     ├── google2cloud.pkl  (Transform from google_ycb model to ycb_rgbd model)
-    ├── ycb_grasp  (generated grasps)
+    ├── ycb_grasp  (里面就是之前采样到的候选grasp pose)
     ├── ycb_meshes_google  (YCB dataset)
-    └── ycb_rgbd  (YCB dataset)
+    └── ycb_rgbd  (包含了模型各视角点云)
     ```
 
-    Generate point cloud from rgb-d image, you may change the number of process running in parallel if you use a shared host with others
+    其中，`ycb_grasp`文件夹需要手动创建为如下结构，每个文件夹中都是之前`generate-dataset-canny.py`采样到的grasp pose（`.npy`）
+
     ```bash
-    cd ..
-    python ycb_cloud_generate.py   #anaconda3  python3
+    ├── ycb_grasp
+    │   ├── test #
+    │   └── train #(训练)
     ```
-    Note: Estimated running time at our `Intel(R) Xeon(R) CPU E5-2690 v4 @ 2.60GHz` dual CPU with 56 Threads is 36 hours. Please also remove objects beyond the capacity of the gripper.
+
+    
+
+
+## 训练模型
 
 1. Run the experiments:
+   
     ```bash
     cd PointNetGPD
     ```
 
+    
     Launch a tensorboard for monitoring
     ```bash
     tensorboard --log-dir ./assets/log --port 8080
-    ```
+	```
 
     and run an experiment for 200 epoch
     ```bash
-    python main_1v.py --epoch 200 --mode train --batch-size x (x>1)  #anaconda3  pyhton3
-    ```
-
+    python main_1v.py --epoch 200 --mode train --batch-size x (x>1)  #anaconda3  python3
+	```
+    
     File name and corresponding experiment:
     ```bash
     main_1v.py        --- 1-viewed point cloud, 2 class
@@ -241,7 +264,6 @@ This code will check the norm calculated by meshpy and pcl library.
     main_fullv_mc.py  --- Full point cloud, 3 class
     main_fullv_gpd.py --- Full point cloud, GPD
     ```
-
     For GPD experiments, you may change the input channel number by modifying `input_chann` in the experiment scripts(only 3 and 12 channels are available)
 
 ## Using the trained network
@@ -253,6 +275,7 @@ This code will check the norm calculated by meshpy and pcl library.
     ```bash
     roslaunch kinect2_bridge kinect2_bridge.launch publish_tf:=true
     ```
+```
 2. [点云采集与预处理](https://github.com/Hymwgk/point_cloud_process)
 
     >1. 采集点云（读取ROS话题即可），保留感兴趣区域点云（ROI）;
@@ -265,7 +288,7 @@ This code will check the norm calculated by meshpy and pcl library.
     git clone https://github.com/Hymwgk/point_cloud_process.git
     cd ..
     catkin build
-    ```
+```
     - 使用 
     ```bash
     roslaunch point_cloud_process marker_track.launch
@@ -299,6 +322,25 @@ This code will check the norm calculated by meshpy and pcl library.
     举个栗子：
     python kinect2grasp.py  --cuda  --gpu  0  --load-model  ../data/1v_500_2class_ourway2sample.model   --using_mp   --model_type   750
     ```
+
+
+## 辅助工具：查看之前采样的候选grasp pose（可跳过）
+- Visualization grasps
+    ```bash
+    cd $HOME/code/PointNetGPD/dex-net/apps
+    python read_grasps_from_file.py    #anaconda3  python3
+    ```
+    Note:
+    
+- This file will visualize the grasps in `$HOME/code/PointNetGPD/PointNetGPD/data/ycb_grasp/` folder
+  
+- Visualization object normals
+    ```bash
+    cd $HOME/code/PointNetGPD/dex-net/apps
+    python Cal_norm.py     #anaconda3  python3
+    ```
+This code will check the norm calculated by meshpy and pcl library.
+
 
 ## Citation
 If you found PointNetGPD useful in your research, please consider citing:
