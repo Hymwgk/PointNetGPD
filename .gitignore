@@ -208,3 +208,5 @@ tags
 *.snm
 *.toc
 *.synctex.gz
+# vscode
+.vscode/

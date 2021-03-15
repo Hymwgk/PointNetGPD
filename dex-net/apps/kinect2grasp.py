@@ -22,7 +22,7 @@ import voxelgrid
 
 
 import pcl
-#p=pcl.PointCloud()
+#容易报错无法导入ruamel.yaml，需要使用命令  conda install ruamel.yaml 来安装，不能使用pip安装
 from autolab_core import YamlConfig
 from dexnet.grasping import RobotGripper
 from dexnet.grasping import GpgGraspSamplerPcl
@@ -618,9 +618,7 @@ if __name__ == '__main__':
     # 两个坐标系之间的变换关系
     while not get_transform:
         try:
-            #尝试查看kinect2相机与桌子之间的转换？
-            #cam_pos, _ = listener.lookupTransform('/table_top', '/kinect2_ir_optical_frame', rospy.Time(0))
-
+            #查看kinect2相机与桌子之间的关系，确保相机已经能够看到标签ar_marker_6
             #cam_pos代表的是相机的trans，不是rot
             cam_pos, _ = listener.lookupTransform('/ar_marker_6', '/kinect2_rgb_optical_frame', rospy.Time(0))
             print(cam_pos)

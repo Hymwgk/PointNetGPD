@@ -75,25 +75,28 @@ cd $HOME/code/
     git clone https://github.com/hymwgk/PointNetGPD.git
     ```
 
-4. Install our requirements in `requirements.txt`
+4. Install our requirements in `requirements.txt` (在python2以及python3环境中都需要安装)
     ```bash
     cd $HOME/code/PointNetGPD
     pip install -r requirements.txt
     ```
 
-5. Install our modified meshpy (Modify from [Berkeley Automation Lab: meshpy](https://github.com/BerkeleyAutomation/meshpy))
+5. Install our modified meshpy (Modify from [Berkeley Automation Lab: meshpy](https://github.com/BerkeleyAutomation/meshpy)) 
     ```bash
+    # 分别在python2和python3环境下执行一遍
+    pip uninstall meshpy #先卸载原有的meshpy
     cd $HOME/code/PointNetGPD/meshpy
-    python setup.py develop
+python setup.py develop  # python2和python3环境下都安装
     ```
-
-6. Install our modified dex-net (Modify from [Berkeley Automation Lab: dex-net](https://github.com/BerkeleyAutomation/dex-net))
+    
+6. Install our modified dex-net (Modify from [Berkeley Automation Lab: dex-net](https://github.com/BerkeleyAutomation/dex-net))  
     ```bash
+    # 分别在python2和python3环境下执行一遍
     cd $HOME/code/PointNetGPD/dex-net
-    python setup.py develop
-    ```
-
-7. 这里需要根据自己的夹爪来修改如下的夹爪文件；  你可以模仿着新建一个以夹爪命名的文件夹，也可以直接在这个文件中修改，之后离线与在线节点的夹爪姿态检测都会根据夹爪具体的外形尺寸来生成。
+    python setup.py develop  # python2和python3环境下都安装
+```
+    
+7. 设置夹爪数学模型，之后离线以及在线节点的候选夹爪姿态计算都会依据此模型来生成；你可以直接在以下文件中根据自己的实际夹爪尺寸来修改对应参数。
 
     ```bash
     vim $HOME/code/PointNetGPD/dex-net/data/grippers/robotiq_85/params.json
@@ -286,32 +289,39 @@ cd $HOME/code/
 
 需要注意的是，原代码中使用的场景点云是经过旋转变化和预处理之后的；在场景桌面上贴有一个二维码标签，由相机获得的场景点云并不能直接用在本代码中，而是先被预处理之后，旋转到了桌面标签坐标系中；详细参看https://github.com/Hymwgk/point_cloud_process
 
-1. 安装预处理包
+为了能够脱离机械臂实物，仅仅进行GPD的实验，同时还能够相对容易地剔除掉桌面点云；代码中选择将场景点云变换到桌面标签（ar_marker_6）坐标系中，
+
+1. 完成手眼标定，并发布“手眼”变换关系，关于Panda手眼标定和发布步骤参看https://github.com/Hymwgk/panda_hand_eye_calibrate
+   
+    ```bash
+   roslaunch panda_hand_eye_calibrate publish_panda_eob.launch
+    ```
+   
+   
+   
+2. 安装预处理包
+
     ```bash
     cd ~/catkin_ws/src
     git clone https://github.com/Hymwgk/point_cloud_process.git
     catkin build
     ```
 
-2.  启动点云采集与预处理
+3. 启动点云采集与预处理
     ```bash
     roslaunch kinect2_bridge kinect2_bridge.launch publish_tf:=true
     roslaunch point_cloud_process get_table_top_points.launch 
     ```
 
-3. 获取机械臂当前状态 （以franka panda为例）
-    向ROS参数服务器发布一个参数，指明机械臂的当前是在移动状态还是已经返回home状态，机械臂在移动时，将暂时禁止gpd。
-    
-    ```bash
-    cd $HOME/code/PointNetGPD/dex-net/apps  
-    python get_panda_state.py   #anaconda2  python2
-    ```
+
 
 4. 运行感知节点  
+   
     这部分就是实际使用PointNetGPD的部分，读取预处理后桌面上的目标区域点云，基于点云进行gpg，之后将夹爪内部的点云送入pointNet中打分，并以ROS消息的形式输出good grasp
+    
     ```bash
     cd $HOME/code/PointNetGPD/dex-net/apps
-    python kinect2grasp.py   #anaconda2  python2
+    python kinect2grasp.py   #anaconda2  python2  需要在conda2环境中也安装pytorch
     ```
     以下是用到的参数
     ```bash
@@ -330,6 +340,28 @@ cd $HOME/code/
     python kinect2grasp.py  --cuda  --gpu  0  --load-model  ../data/1v_500_2class_ourway2sample.model   --using_mp   --model_type   750
     ```
 
+
+
+------
+
+​																							**以下是使用机械臂进行真正的抓取执行需要的步骤，可以不做**
+
+5. 获取机械臂当前状态，并准备接收生成的抓取（以franka panda为例）需提前安装`panda_go_grasp`包，参见https://github.com/Hymwgk/panda_go_grasp
+    向ROS参数服务器发布一个参数，指明机械臂的当前是在移动状态还是已经返回home状态，机械臂在移动时，将暂时禁止gpd。
+
+    ```bash
+    roslaunch panda_go_grasp state_checker.launch  #anaconda2  python2
+    ```
+    
+6. 执行抓取
+
+    ```bash
+    roslaunch panda_go_grasp go_grasp.launch  #anaconda2  python2
+    ```
+
+    
+
+    
 
 ## 辅助工具：查看之前采样的候选grasp pose（可跳过）
 - Visualization grasps
