@@ -209,4 +209,4 @@ tags
 *.toc
 *.synctex.gz
 # vscode
-.vscode/
+#.vscode/
