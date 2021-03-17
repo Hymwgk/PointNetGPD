@@ -1065,7 +1065,7 @@ class PointGraspOneViewDataset(torch.utils.data.Dataset):
         #如"/home/wgk/win10/data/ycb_grasp/train/003_cracker_box.npy"
         f_grasp = self.d_grasp[obj_grasp]
         #对应物体的ply文件路径
-        ply_locate = "/home/wgk/code/PointNetGPD/PointNetGPD/data/ycb_meshes_google/" + obj_grasp + "/google_512k/nontextured.ply"
+        ply_locate = self.path+"/objects/" + obj_grasp + "/google_512k/nontextured.ply"
 
         
         #注意，这里self.d_pc[obj_pc]查出来的是一个与目标物体obj_pc对应的多个视角点云文件的路径列表

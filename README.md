@@ -20,7 +20,7 @@ PointNetGPD (ICRA 2019, [arXiv](https://arxiv.org/abs/1809.06267)) is an end-to-
     2. **打分：** 提取剩余的抓取姿态夹爪内部的点，进一步剔除掉不合理的数据之后，将点集送入训练好的PointNet网络中打分；
     3. **排序：** 将候选的抓取按照分数从高到低排序，输出分数最高的抓取。
 
-<img src="data/grasp_pipeline.svg" width="70%"  >
+<img src="./data/grasp_pipeline.svg" width="70%"  >
 
 ## Video
 - 作者的实验视频  
@@ -40,11 +40,11 @@ YCB数据集主要分为两个部分，一部分是数据集物体的CAD模型�
 
 之后两部分的计算结果将会被放在同一个文件夹中，Dataloader将会对该文件夹进行处理，并计算出样本数据送入PointNet中进行训练。
 
-<img src="./pic/image-20210311111731964.png" alt="image-20210311111731964" style="zoom: 67%;" />
+<img src="./data/image-20210311111731964.png" alt="image-20210311111731964" style="zoom: 67%;" />
 
 以下是稍微具体一些的解释图：
 
-<img src="./pic/image-20210311162402868.png" alt="image-20210311162402868" style="zoom:80%;" />
+<img src="./data/image-20210311162402868.png" alt="image-20210311162402868" style="zoom:80%;" />
 
 
 
@@ -79,18 +79,19 @@ cd $HOME/code/
 4. Install our requirements in `requirements.txt` (在python2以及python3环境中都需要安装)
     ```bash
     cd $HOME/code/PointNetGPD
-    pip install -r requirements.txt
+    pip install -r requirements.txt  #python3环境中
+    pip install -r requirements2.txt  #python2环境中
     ```
-
+    
 5. Install our modified meshpy (Modify from [Berkeley Automation Lab: meshpy](https://github.com/BerkeleyAutomation/meshpy)) 
     ```bash
     cd $HOME/code
     git clone https://github.com/Hymwgk/meshpy.git
-    cd meshpy
-# 分别在python2和python3环境下执行一遍
+	cd meshpy
+	#分别在python2和python3环境下执行一遍
     python setup.py develop  
     ```
-    
+
 6. Install our modified dex-net (Modify from [Berkeley Automation Lab: dex-net](https://github.com/BerkeleyAutomation/dex-net))  
     ```bash
     cd $HOME/code
@@ -128,8 +129,8 @@ cd $HOME/code/
 
     `params.json`参数的具体定义示意图，修改后的本代码，离线的夹爪参数仅作为候选抓取姿态的采样，而不涉及到夹爪内部点云的提取。
 
-	<img src="./pic/在线检测时的夹爪各项参数定义.png" alt="在线检测时的夹爪各项参数定义" title="在线检测时的夹爪各项参数定义" style="zoom: 67%;" />
-    <img src="./pic/在线检测时的夹爪数学模型各点以及夹爪坐标系定义.png" alt="在线检测时的夹爪数学模型各点以及夹爪坐标系定义" title="在线检测时的夹爪数学模型各点以及夹爪坐标系定义" style="zoom:67%;" />  
+	<img src="./data/在线检测时的夹爪各项参数定义.png" alt="在线检测时的夹爪各项参数定义" title="在线检测时的夹爪各项参数定义" style="zoom: 67%;" />
+    <img src="./data/在线检测时的夹爪数学模型各点以及夹爪坐标系定义.png" alt="在线检测时的夹爪数学模型各点以及夹爪坐标系定义" title="在线检测时的夹爪数学模型各点以及夹爪坐标系定义" style="zoom:67%;" />  
 
 
 
@@ -177,38 +178,37 @@ cd $HOME/code/
     ```
 3. Install SDFGen from [GitHub](https://github.com/jeffmahler/SDFGen.git):
     ```bash
+    cd code
     git clone https://github.com/jeffmahler/SDFGen.git
     cd SDFGen
     sudo sh install.sh
-    ```
-
-4. 安装python pcl library [python-pcl](https://github.com/strawlab/python-pcl)，python pcl在离线训练(python3)和在线pgd(python2)时均有使用:
+```
+    
+4. 安装python pcl library [python-pcl](https://github.com/strawlab/python-pcl)，python pcl在离线训练(python3)和在线pgd(python2)时均有使用，以下要求Ubuntu18.04，PCL1.8.1（源安装在系统路径下）:
     ```bash
-    git clone https://github.com/strawlab/python-pcl.git
+    git clone https://github.com/lianghongzhuo/python-pcl.git  
     pip install --upgrade pip
-    pip install cython
+    pip install cython==0.25.2 #python2
+    pip install cython   #python3
     pip install numpy
     cd python-pcl
     python setup.py build_ext -i  #python2和3环境中都要执行
-    python setup.py develop
+    python setup.py develop  #python2和3环境中都要执行
     ```
-    - If you use **ubuntu 18.04** and/or **conda environment**, you may encounter a compile error when install python-pcl, this is because conda has a higer version of vtk, here is a work around:
-        1. `conda install vtk` or `pip install vtk`
-        2. Use my fork: https://github.com/lianghongzhuo/python-pcl.git  
-5. Generate sdf file for each nontextured.obj file using SDFGen by running:
+5. 为默认路径`$HOME/dataset/ycb_meshes_google/objects`下的文件生成 sdf file for each nontextured.obj file using SDFGen by running:
     ```bash
-    cd $HOME/code/PointNetGPD/dex-net/apps
+    cd $HOME/code/PointNetGPD/apps
     python read_file_sdf.py  #anaconda3环境下python3
     ```
 
 
-6. 使用Antipod对数据集中CAD模型进行候选抓取姿态采样,以及利用ForceClosure&GWS对生成抓取姿态进行打分，这部分的执行时间极长，主要花费时间在抓取采样之上：
+6. 为默认路径`$HOME/dataset/ycb_meshes_google/objects`下的CAD模型使用Antipod进行候选抓取姿态采样,以及利用ForceClosure&GWS对生成抓取姿态进行打分，这部分的执行时间极长，主要花费时间在抓取采样之上：
     ```bash
-    cd $HOME/code/PointNetGPD/dex-net/apps
+    cd $HOME/code/PointNetGPD/apps
     python generate-dataset-canny.py [prefix]   #anaconda3环境下python3
     ```
 
-    计算结束后将会把结果以`.npy`文件形式保存在默认的`$HOME/code/PointNetGPD/dex-net/apps/generated_grasps`路径下；这里的`[prefix]`可以根据自己的夹爪类型，添加一个标签，也可以选择不加，那么就会自动被替换成为`default`
+    计算结束后将会把结果以`.npy`文件形式保存在默认的`$HOME/code/PointNetGPD/apps/generated_grasps`路径下；这里的`[prefix]`可以根据自己的夹爪类型，添加一个标签，也可以选择不加，那么就会自动被替换成为`default`
 
 7. 作者还给出了一个根据roboticq85夹爪模型采样好的候选grasp pose结果文件: https://tams.informatik.uni-hamburg.de/research/datasets/PointNetGPD_grasps_dataset.zip  
 
@@ -218,18 +218,16 @@ cd $HOME/code/
 1. 将下载的YCB数据集文件夹`ycb_rgbd`拷贝至如下路径
 
    ```bash
-   cp  .../ycb_rgbd   $HOME/code/PointNetGPD/PointNetGPD/data/
+   cp  .../ycb_rgbd   $HOME/code/PointNetGPD/dataset/
    ```
 
 
-2. 将YCB数据集中的深度图转换为点云数据，生成的点云将默认放在`$HOME/code/PointNetGPD/PointNetGPD/data/ycb_rgbd/*/clouds`文件夹中。
+2. 将默认路径`$HOME/code/PointNetGPD/dataset/ycb_rgbd/*`下的深度图转换为点云数据，并放在`$HOME/code/PointNetGPD/dataset/ycb_rgbd/*/clouds`文件夹中。
 
    ```bash
-   cd $HOME/code/PointNetGPD/PointNetGPD/
+   cd $HOME/code/PointNetGPD/apps/
    python ycb_cloud_generate.py   #anaconda3  python3
    ```
-
-
 
 
 ## 准备Dataloader需要的数据文件夹
@@ -239,7 +237,7 @@ cd $HOME/code/
 1. 进入Dataloader需要的文件夹:
 
     ```bash
-    cd $HOME/code/PointNetGPD/PointNetGPD/data
+    cd $HOME/code/PointNetGPD/dataset
     ```
     确保该文件夹下有如下文件
     ```
@@ -247,7 +245,7 @@ cd $HOME/code/
         ├── google2cloud.pkl  (Transform from google_ycb model to ycb_rgbd model)
         ├── ycb_grasp  (里面就是离线Antipod采样到的候选grasp pose)
         ├── ycb_meshes_google  (YCB dataset)
-        └── ycb_rgbd  (包含了模型各视角点云)
+        └── ycb_rgbd  (上面已经生成了各模型各视角点云)
     ```
 
     其中，`ycb_grasp`文件夹需要手动创建为如下结构，每个文件夹中都是之前`generate-dataset-canny.py`采样到的grasp pose（`.npy`）
@@ -419,7 +417,3 @@ If you found PointNetGPD useful in your research, please consider citing:
 - [metu-ros-pkg](https://github.com/kadiru/metu-ros-pkg)
 - [mayavi](https://github.com/enthought/mayavi)
 
-
-```
-
-```

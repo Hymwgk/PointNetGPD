@@ -46,11 +46,11 @@ np.random.seed(int(time.time()))
 
 
 if args.model_type == "500":
-    args.load_model = "../data/1v_500_2class_ourway2sample.model"
+    args.load_model = "./data/1v_500_2class_ourway2sample.model"
 elif args.model_type == "750":
-    args.load_model = "../data/1v_750_2class_ourway2sample.model"
+    args.load_model = "./data/1v_750_2class_ourway2sample.model"
 elif args.model_type == "3class":  # input points number is 500
-    args.load_model = "../data/pointgpd_3class.model"
+    args.load_model = "./data/pointgpd_3class.model"
 else:
     print("Using default model file")
 model = torch.load(args.load_model, map_location="cpu")

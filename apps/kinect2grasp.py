@@ -46,17 +46,17 @@ try:
 except ImportError:
     print("Can not import mayavi")
     mlab = None
-sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath("__file__")))))
-sys.path.append(os.environ['HOME'] + "/code/PointNetGPD/PointNetGPD")
+#sys.path.append(path.dirname(path.dirname(path.dirname(path.abspath("__file__")))))
+sys.path.append(os.environ['HOME'] + "/code/PointNetGPD")
 
 #把读取网络模型，外部命令参数的指令写在了main_test中
 from main_test import test_network, model, args
 
 # global config:全局的配置文件
-yaml_config = YamlConfig(os.environ['HOME'] + "/code/PointNetGPD/dex-net/test/config.yaml")
+yaml_config = YamlConfig(os.environ['HOME'] + "/code/dex-net/test/config.yaml")
 gripper_name = 'panda'
 #加载夹爪
-gripper = RobotGripper.load(gripper_name, os.environ['HOME'] + "/code/PointNetGPD/dex-net/data/grippers")
+gripper = RobotGripper.load(gripper_name, os.environ['HOME'] + "/code/dex-net/data/grippers")
 ags = GpgGraspSamplerPcl(gripper, yaml_config)
 
 value_fc = 0.4  # no use, set a random number

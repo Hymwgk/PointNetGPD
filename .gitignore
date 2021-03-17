@@ -1,15 +1,15 @@
-dex-net/apps/generated_grasps/
-.dexnet/
-python-pcl/
 .idea/
-PointNetGPD/assets/
-PointNetGPD/data/
-.dataset/
+assets/learned_models/
+assets/log/
+dataset/ycb_grasp/
+dataset/ycb_meshes_google/
+dataset/ycb_rgbd/
 PointNetGPD/OLD/
 PointNetGPD/chann_12/
 PointNetGPDchann_3/
 PointNetGPD/fullpc/
 PointNetGPD/1view/
+*.npy
 # Created by https://www.gitignore.io/api/vim,python,pycharm,jupyternotebook
 
 ### JupyterNotebook ###

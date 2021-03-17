@@ -421,7 +421,7 @@ def main():
     os.chdir(path)
     print(os.getcwd())
     #遍历（相对路径,相对于工作目录的路径）data/ycb_rgbd中，所有的以0开头的文件夹，并再次遍历该文件夹中的jpg图片
-    fl = np.array(glob.glob(r'data/ycb_rgbd/0*/*.jpg'))
+    fl = np.array(glob.glob(r'../dataset/ycb_rgbd/0*/*.jpg'))
     np.random.shuffle(fl)
     #获取cpu核心数
     cores = mp.cpu_count()

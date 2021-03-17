@@ -58,7 +58,7 @@ def do_job(i):      #处理函数  处理第i个模型
     good_grasp=[]
     #执行worker，将采样的抓取结果放到good_grasp中
     worker(i, 100, 20, good_grasp)
-    #将gpg得到的候选抓取文件存放起来
+    #对CAD模型进行Antipod采样并筛选得到的候选抓取
     good_grasp_file_name =  "./generated_grasps/{}_{}_{}".format(filename_prefix, str(object_name), str(len(good_grasp)))
     
     #创建一个pickle文件，将good_grasp保存起来
@@ -90,11 +90,11 @@ def worker(i, sample_nums, grasp_amount, good_grasp):  #主要是抓取采样器
     print('a worker of task {} start'.format(object_name))    
 
     #读取初始配置文件，读取并在内存中复制了一份
-    yaml_config = YamlConfig(home_dir + "/code/PointNetGPD/dex-net/test/config.yaml")
+    yaml_config = YamlConfig(home_dir + "/code/dex-net/test/config.yaml")
     #设置夹名称
     gripper_name = 'panda' 
     #根据设置的夹爪名称加载夹爪配置
-    gripper = RobotGripper.load(gripper_name, home_dir + "/code/PointNetGPD/dex-net/data/grippers") 
+    gripper = RobotGripper.load(gripper_name, home_dir + "/code/dex-net/data/grippers") 
     #设置抓取采样的方法
     grasp_sample_method = "antipodal"
     if grasp_sample_method == "uniform":
