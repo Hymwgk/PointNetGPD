@@ -4,6 +4,7 @@ python-pcl/
 .idea/
 PointNetGPD/assets/
 PointNetGPD/data/
+.dataset/
 PointNetGPD/OLD/
 PointNetGPD/chann_12/
 PointNetGPDchann_3/
@@ -208,5 +209,3 @@ tags
 *.snm
 *.toc
 *.synctex.gz
-# vscode
-#.vscode/

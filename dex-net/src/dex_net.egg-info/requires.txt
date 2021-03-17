@@ -1,3 +1,0 @@
-cvxopt
-dill
-h5py

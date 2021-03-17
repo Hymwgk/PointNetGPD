@@ -1,7 +1,6 @@
 opencv-python==4.2.0.32
 trimesh
 ffmpeg-python==0.1.5
-perception
 networkx==2.2
 scipy
 h5py
@@ -17,7 +16,6 @@ trimesh
 pyhull
 cvxopt
 pandas
-visualization
 pyquaternion
 numba
 autolab-core
