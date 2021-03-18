@@ -5,13 +5,28 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: 当前文件",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "在线GPD",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/apps/kinect2grasp.py",
             "console": "integratedTerminal",
-            "args": ["--cuda"  ,"--gpu" , "0" , "--load-model",  "./data/1v_500_2class_ourway2sample.model",
-                 "--using_mp"  , "--model_type"  , "750"]
+            "args": [
+                "--cuda",
+                "--gpu",
+                "0",
+                "--load-model",
+                "./data/1v_500_2class_ourway2sample.model",
+                "--using_mp",
+                "--model_type",
+                "750"
+            ]
         }
     ]
 }

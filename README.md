@@ -46,6 +46,12 @@ YCB数据集主要分为两个部分，一部分是数据集物体的CAD模型�
 
 <img src="./data/image-20210311162402868.png" alt="image-20210311162402868" style="zoom:80%;" />
 
+为了防止硬盘不够大，本代码将最终Dataloader用到的数据集，单独放在了以下目录，可以挂载到一个单独的硬盘里
+
+```bash
+mkdir -p $HOME/dataset/PointNetGPD
+```
+
 
 
 ## 本代码的修改
@@ -65,7 +71,10 @@ YCB数据集主要分为两个部分，一部分是数据集物体的CAD模型�
 mkdir -p $HOME/code/
 cd $HOME/code/
 ```
+
+
 ## Install all the requirements (Using a virtual environment is recommended)
+
 1. Make sure in your Python environment do not have same package named ```meshpy``` or ```dexnet```.
 
 2. 确保已经安装了ROS以及相机预处理相关的程序包（https://github.com/Hymwgk/point_cloud_process）
@@ -139,7 +148,7 @@ cd $HOME/code/
 1. 下载 YCB object set from [YCB Dataset](http://ycb-benchmarks.s3-website-us-east-1.amazonaws.com/)，该数据集提供了物体的CAD模型和一定角度下的深度图；
 2. 原代码中，将YCB的数据集放在了如下位置:
     ```bash
-    mkdir -p $HOME/dataset/ycb_meshes_google/objects
+    cd $HOME/dataset/PointNetGPD/ycb_meshes_google/objects
     ```
 
     如果你的Home盘分区不够大，希望换一个位置，可以:  
@@ -182,6 +191,7 @@ cd $HOME/code/
     git clone https://github.com/jeffmahler/SDFGen.git
     cd SDFGen
     sudo sh install.sh
+    ```
 ```
     
 4. 安装python pcl library [python-pcl](https://github.com/strawlab/python-pcl)，python pcl在离线训练(python3)和在线pgd(python2)时均有使用，以下要求Ubuntu18.04，PCL1.8.1（源安装在系统路径下）:
@@ -194,21 +204,21 @@ cd $HOME/code/
     cd python-pcl
     python setup.py build_ext -i  #python2和3环境中都要执行
     python setup.py develop  #python2和3环境中都要执行
-    ```
-5. 为默认路径`$HOME/dataset/ycb_meshes_google/objects`下的文件生成 sdf file for each nontextured.obj file using SDFGen by running:
+```
+5. 为默认路径`$HOME/dataset/PointNetGPD/ycb_meshes_google/objects/`下的.ply文件生成.sdf 文件（放在同一文件夹下）:
     ```bash
     cd $HOME/code/PointNetGPD/apps
     python read_file_sdf.py  #anaconda3环境下python3
     ```
 
 
-6. 为默认路径`$HOME/dataset/ycb_meshes_google/objects`下的CAD模型使用Antipod进行候选抓取姿态采样,以及利用ForceClosure&GWS对生成抓取姿态进行打分，这部分的执行时间极长，主要花费时间在抓取采样之上：
+6. 为默认路径`$HOME/dataset/PointNetGPD/ycb_meshes_google/objects/`下的CAD模型使用Antipod进行候选抓取姿态采样,以及利用ForceClosure&GWS对生成抓取姿态进行打分，这部分的执行时间极长，主要花费时间在抓取采样之上：
     ```bash
     cd $HOME/code/PointNetGPD/apps
     python generate-dataset-canny.py [prefix]   #anaconda3环境下python3
     ```
 
-    计算结束后将会把结果以`.npy`文件形式保存在默认的`$HOME/code/PointNetGPD/apps/generated_grasps`路径下；这里的`[prefix]`可以根据自己的夹爪类型，添加一个标签，也可以选择不加，那么就会自动被替换成为`default`
+    计算结束后将会把结果以`.npy`文件形式保存在默认的`$HOME/dataset/PointNetGPD/ycb_grasp/`路径下；这里的`[prefix]`可以根据自己的夹爪类型，添加一个标签，也可以选择不加，那么就会自动被替换成为`default`
 
 7. 作者还给出了一个根据roboticq85夹爪模型采样好的候选grasp pose结果文件: https://tams.informatik.uni-hamburg.de/research/datasets/PointNetGPD_grasps_dataset.zip  
 
@@ -218,11 +228,11 @@ cd $HOME/code/
 1. 将下载的YCB数据集文件夹`ycb_rgbd`拷贝至如下路径
 
    ```bash
-   cp  .../ycb_rgbd   $HOME/code/PointNetGPD/dataset/
+   cp  .../ycb_rgbd   $HOME/dataset/PointNetGPD/
    ```
 
 
-2. 将默认路径`$HOME/code/PointNetGPD/dataset/ycb_rgbd/*`下的深度图转换为点云数据，并放在`$HOME/code/PointNetGPD/dataset/ycb_rgbd/*/clouds`文件夹中。
+2. 将默认路径`$HOME/dataset/PointNetGPD/ycb_rgbd/*/`下的深度图转换为点云数据，并放在`$HOME/dataset/PointNetGPD/ycb_rgbd/*/clouds`文件夹中。
 
    ```bash
    cd $HOME/code/PointNetGPD/apps/
@@ -237,7 +247,7 @@ cd $HOME/code/
 1. 进入Dataloader需要的文件夹:
 
     ```bash
-    cd $HOME/code/PointNetGPD/dataset
+    cd $HOME/dataset/PointNetGPD/
     ```
     确保该文件夹下有如下文件
     ```
@@ -248,7 +258,7 @@ cd $HOME/code/
         └── ycb_rgbd  (上面已经生成了各模型各视角点云)
     ```
 
-    其中，`ycb_grasp`文件夹需要手动创建为如下结构，每个文件夹中都是之前`generate-dataset-canny.py`采样到的grasp pose（`.npy`）
+    其中，`ycb_grasp`文件夹需要手动创建为如下结构，对之前生成的候选抓取样本分成两部分一部分训练一部分验证（作者好像没说咋分），每个文件夹中都是之前`generate-dataset-canny.py`采样到的grasp pose（`.npy`）
     
     ```bash
     ├── ycb_grasp

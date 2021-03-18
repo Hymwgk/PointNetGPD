@@ -45,9 +45,9 @@ def do_job(i):      #处理函数  处理第i个模型
     """
     good_grasp = multiprocessing.Manager().list()    #列表
 
-    # grasp_amount per friction: 20*40   共开70个子线程做这件事
+    # grasp_amount per friction: 20*40   共开50个子线程做这件事
     p_set = [multiprocessing.Process(target=worker, args=(i, 100, 20, good_grasp)) for _ in
-             range(1)]  
+             range(50)]  
     
     #开始多线程，并等待结束
     [p.start() for p in p_set]  
@@ -58,8 +58,9 @@ def do_job(i):      #处理函数  处理第i个模型
     good_grasp=[]
     #执行worker，将采样的抓取结果放到good_grasp中
     worker(i, 100, 20, good_grasp)
+
     #对CAD模型进行Antipod采样并筛选得到的候选抓取
-    good_grasp_file_name =  "./generated_grasps/{}_{}_{}".format(filename_prefix, str(object_name), str(len(good_grasp)))
+    good_grasp_file_name =  os.environ['HOME']+"/dataset/PointNetGPD/ycb_grasp/{}_{}_{}".format(filename_prefix, str(object_name), str(len(good_grasp)))
     
     #创建一个pickle文件，将good_grasp保存起来
     with open(good_grasp_file_name + '.pickle', 'wb') as f:
@@ -112,7 +113,7 @@ def worker(i, sample_nums, grasp_amount, good_grasp):  #主要是抓取采样器
         raise NameError("Can't support this sampler")
     print("Log: do job", i)
     #设置obj模型文件与sdf文件路径
-    if os.path.exists(str(file_list_all[i]) + "/google_512k/nontextured.obj"):
+    if os.path.exists(str(file_list_all[i]) + "/google_512k/nontextured.obj") and os.path.exists(str(file_list_all[i]) + "/google_512k/nontextured.sdf"):
         of = ObjFile(str(file_list_all[i]) + "/google_512k/nontextured.obj")
         sf = SdfFile(str(file_list_all[i]) + "/google_512k/nontextured.sdf")
     else:
@@ -217,22 +218,24 @@ if __name__ == '__main__':
         filename_prefix = "default"
     home_dir = os.environ['HOME']
     #存放CAD模型的文件夹
-    file_dir = home_dir + "/dataset/ycb_meshes_google/objects"   #获取模型的路径
+    file_dir = home_dir + "/dataset/PointNetGPD/ycb_meshes_google/objects"   #获取模型的路径
     file_list_all = get_file_name(file_dir)              #返回一个列表，包含物体
     object_numbers = file_list_all.__len__()       #获取文件夹中物体数量
 
     job_list = np.arange(object_numbers)   #返回一个长度为object_numbers的元组 0 1 2 3 ... 
     job_list = list(job_list)                                    #转换为列表
     #设置同时对几个模型进行采样
-    pool_size = 47
+    pool_size = 40
     assert (pool_size <= len(job_list))  
     # Initialize pool
     pool = []     #创建列表
+ 
     for _ in range(pool_size):   #想多线程处理多个模型，但是实际上本代码每次只处理一个
         job_i = job_list.pop(0)   #删除掉第0号值，并把job_i赋予0号值
         pool.append(multiprocessing.Process(target=do_job, args=(job_i,)))  #在pool末尾添加元素
     [p.start() for p in pool]                  #启动多线程
     # refill
+    
     while len(job_list) > 0:    #如果有些没处理完
         for ind, p in enumerate(pool):
             if not p.is_alive():
@@ -243,3 +246,4 @@ if __name__ == '__main__':
                 pool.append(p)
                 break
     print('All job done.')
+    

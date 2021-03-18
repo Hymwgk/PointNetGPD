@@ -349,10 +349,10 @@ def getRGBFromDepthTransform(calibration, camera, referenceCamera):
 def generate(path):
     path = path.split('/') 
     # Parameters
-    ycb_data_folder = path[0]			# Folder that contains the ycb data.	
-    target_object = path[1]	# Full name of the target object.
-    viewpoint_camera = path[2].split('_')[0]				# Camera which the viewpoint will be generated.
-    viewpoint_angle = path[2].split('_')[1].split('.')[0]				# Relative angle of the object w.r.t the camera (angle of the turntable).
+    ycb_data_folder = os.path.join('/',*path[:-2])			# Folder that contains the ycb data.	
+    target_object = path[-2]	# Full name of the target object.
+    viewpoint_camera = path[-1].split('_')[0]				# Camera which the viewpoint will be generated.
+    viewpoint_angle = path[-1].split('_')[1].split('.')[0]				# Relative angle of the object w.r.t the camera (angle of the turntable).
 
     referenceCamera = "NP5" # can only be NP5
 
@@ -420,8 +420,11 @@ def main():
     #更改（确保）当前所在目录是工作目录
     os.chdir(path)
     print(os.getcwd())
+    home_dir = os.environ['HOME']
+    file_dir = home_dir + "/dataset/PointNetGPD/ycb_rgbd/0*/*.jpg"   #获取模型的路径
     #遍历（相对路径,相对于工作目录的路径）data/ycb_rgbd中，所有的以0开头的文件夹，并再次遍历该文件夹中的jpg图片
-    fl = np.array(glob.glob(r'../dataset/ycb_rgbd/0*/*.jpg'))
+    fl = np.array(glob.glob(file_dir))
+    print(fl[0])
     np.random.shuffle(fl)
     #获取cpu核心数
     cores = mp.cpu_count()

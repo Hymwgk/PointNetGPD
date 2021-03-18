@@ -39,8 +39,11 @@ def generate_sdf(path_to_sdfgen, obj_filename, dim, padding):
 
 def do_job_convert_obj_to_sdf(x):
     # file_list_all = get_file_name(file_dir)
-    generate_sdf(path_sdfgen, str(file_list_all[x])+"/google_512k/nontextured.obj", 100, 5)  # for google scanner
-    print("Done job number", x)
+    if os.path.exists(str(file_list_all[x])+"/google_512k/nontextured.sdf"):
+        print(str(file_list_all[x])+"/google_512k/nontextured.sdf","pass")
+    else:
+        generate_sdf(path_sdfgen, str(file_list_all[x])+"/google_512k/nontextured.obj", 100, 5)  # for google scanner
+        print("Done job number", x)
 
 
 def generate_obj_from_ply(file_name_):
@@ -52,16 +55,19 @@ def generate_obj_from_ply(file_name_):
 if __name__ == '__main__':
     home_dir = os.environ['HOME']
     #设置obj  ply文件的路径
-    file_dir = home_dir + "/dataset/ycb_meshes_google/objects"  # for google ycb
+    file_dir = home_dir + "/dataset/PointNetGPD/ycb_meshes_google/objects"  # for google ycb
     # file_dir = home_dir + "/dataset/ycb_meshes"  # for low quality ycb
-    path_sdfgen = home_dir + "/code/PointNetGPD/SDFGen/bin/SDFGen"
+    path_sdfgen = home_dir + "/code/SDFGen/bin/SDFGen"
     file_list_all = get_file_name(file_dir)
     object_numbers = file_list_all.__len__()
 
     # generate obj from ply file
     for i in file_list_all:
-         generate_obj_from_ply(i+"/google_512k/nontextured.ply")
-         print("finish", i)
+        if os.path.exists(i+"/google_512k/nontextured.ply"):
+            print(i+"/google_512k/nontextured.ply","pass")
+        else:
+            generate_obj_from_ply(i+"/google_512k/nontextured.ply")
+            print("finish", i)
     # The operation for the multi core
     cores = multiprocessing.cpu_count()
     pool = multiprocessing.Pool(processes=cores)
