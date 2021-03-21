@@ -40,7 +40,7 @@ def get_file_name(file_dir_):
 """
 def do_job(i):      #处理函数  处理第i个模型
     #根据id号，截取对应的目标模型名称
-    object_name = file_list_all[i][len(home_dir) + 35:] 
+    object_name = file_list_all[i].split('/')[-1]
 
     """
     good_grasp = multiprocessing.Manager().list()    #列表

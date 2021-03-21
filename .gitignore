@@ -9,6 +9,7 @@ PointNetGPD/chann_12/
 PointNetGPDchann_3/
 PointNetGPD/fullpc/
 PointNetGPD/1view/
+exception.txt
 *.npy
 # Created by https://www.gitignore.io/api/vim,python,pycharm,jupyternotebook
 

@@ -46,7 +46,7 @@ YCB数据集主要分为两个部分，一部分是数据集物体的CAD模型�
 
 <img src="./data/image-20210311162402868.png" alt="image-20210311162402868" style="zoom:80%;" />
 
-为了防止硬盘不够大，本代码将最终Dataloader用到的数据集，单独放在了以下目录，可以挂载到一个单独的硬盘里
+为了防止硬盘不够大，本代码将最终Dataloader用到的数据集，单独放在了以下目录，可以挂载到一个单独的硬盘里，详细见后文的设置
 
 ```bash
 mkdir -p $HOME/dataset/PointNetGPD
@@ -242,7 +242,7 @@ cd $HOME/code/
 
 ## 准备Dataloader需要的数据文件夹
 
-需要将刚才生成的候选grasp pose还有各视角下的点云文件放在同一个文件夹下，该文件夹将会提供给PointNet的Dataloader，该Dataloader将会在训练时结合候选grasp pose&点云 提取“夹爪内部的点云”（详细解释见作者论文）
+此该文件夹将会提供给PointNet的Dataloader，该Dataloader将会在训练时结合候选grasp pose&点云 提取“夹爪内部的点云”（详细解释见作者论文）
 
 1. 进入Dataloader需要的文件夹:
 
@@ -304,13 +304,11 @@ cd $HOME/code/
 - 为了能够脱离机械臂实物，仅仅进行GPD的实验，同时还能够相对容易地剔除掉桌面点云；代码中选择将场景点云变换到桌面标签（ar_marker_6）坐标系中，该部分的变换处理参看https://github.com/Hymwgk/point_cloud_process
 - 如果使用机械臂实物（以panda为例）所有的指令运行的窗口都需要运行`source panda_client.sh`指令确保本机ROS_MASTER指向远程工控机，如果仅仅进行gpd不实际进行抓取则不需要这样做。参见https://github.com/Hymwgk/panda_moveit_config
 
-1. 完成手眼标定，并发布“手眼”变换关系，关于Panda手眼标定和发布步骤参看https://github.com/Hymwgk/panda_hand_eye_calibrate
+1. （不实际抓取不需要）手眼标定并发布“手眼”变换关系，关于Panda手眼标定和发布步骤参看https://github.com/Hymwgk/panda_hand_eye_calibrate
    
     ```bash
    roslaunch panda_hand_eye_calibrate publish_panda_eob.launch
    ```
-   
-   
    
 2. 安装预处理包
 
@@ -325,8 +323,6 @@ cd $HOME/code/
     roslaunch kinect2_bridge kinect2_bridge.launch publish_tf:=true  #启动相机
     roslaunch point_cloud_process get_table_top_points.launch          #启动标签追踪以及点云预处理
     ```
-
-
 
 4. 运行感知节点  
    

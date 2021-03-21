@@ -5,6 +5,21 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "离线训练",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main_1v.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--epoch",
+                "200",
+                "--mode",
+                "train",
+                "--batch-size",
+                "32"
+            ]
+        },
+        {
             "name": "Python: 当前文件",
             "type": "python",
             "request": "launch",
