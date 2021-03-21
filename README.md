@@ -192,7 +192,7 @@ cd $HOME/code/
     cd SDFGen
     sudo sh install.sh
     ```
-```
+
     
 4. 安装python pcl library [python-pcl](https://github.com/strawlab/python-pcl)，python pcl在离线训练(python3)和在线pgd(python2)时均有使用，以下要求Ubuntu18.04，PCL1.8.1（源安装在系统路径下）:
     ```bash
@@ -204,7 +204,7 @@ cd $HOME/code/
     cd python-pcl
     python setup.py build_ext -i  #python2和3环境中都要执行
     python setup.py develop  #python2和3环境中都要执行
-```
+    ```
 5. 为默认路径`$HOME/dataset/PointNetGPD/ycb_meshes_google/objects/`下的.ply文件生成.sdf 文件（放在同一文件夹下）:
     ```bash
     cd $HOME/code/PointNetGPD/apps
