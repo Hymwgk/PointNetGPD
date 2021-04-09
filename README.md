@@ -220,7 +220,7 @@ cd $HOME/code/
 
     计算结束后将会把结果以`.npy`文件形式保存在默认的`$HOME/dataset/PointNetGPD/ycb_grasp/`路径下；这里的`[prefix]`可以根据自己的夹爪类型，添加一个标签，也可以选择不加，那么就会自动被替换成为`default`
 
-7. 作者还给出了一个根据roboticq85夹爪模型采样好的候选grasp pose结果文件: https://tams.informatik.uni-hamburg.de/research/datasets/PointNetGPD_grasps_dataset.zip  
+7. 作者还给出了一个根据roboticq85夹爪模型采样好的候选grasp pose [结果文件](https://tams.informatik.uni-hamburg.de/research/datasets/PointNetGPD_grasps_dataset.zip)
 
 
 ## 对YCB数据集中各个视角的深度图像生成点云
@@ -301,10 +301,10 @@ cd $HOME/code/
 
 需要注意的是：
 
-- 为了能够脱离机械臂实物，仅仅进行GPD的实验，同时还能够相对容易地剔除掉桌面点云；代码中选择将场景点云变换到桌面标签（ar_marker_6）坐标系中，该部分的变换处理参看https://github.com/Hymwgk/point_cloud_process
-- 如果使用机械臂实物（以panda为例）所有的指令运行的窗口都需要运行`source panda_client.sh`指令确保本机ROS_MASTER指向远程工控机，如果仅仅进行gpd不实际进行抓取则不需要这样做。参见https://github.com/Hymwgk/panda_moveit_config
+- 为了能够脱离机械臂实物，仅仅进行GPD的实验，同时还能够相对容易地剔除掉桌面点云；代码中选择将场景点云变换到桌面标签（ar_marker_6）坐标系中，该部分的变换处理[参看此处](https://github.com/Hymwgk/point_cloud_process)
+- 如果使用机械臂实物（以panda为例）所有的指令运行的窗口都需要运行`source panda_client.sh`指令确保本机ROS_MASTER指向远程工控机，如果仅仅进行gpd不实际进行抓取则不需要这样做。[参看此处](https://github.com/Hymwgk/panda_moveit_config)
 
-1. （不实际抓取不需要）手眼标定并发布“手眼”变换关系，关于Panda手眼标定和发布步骤参看https://github.com/Hymwgk/panda_hand_eye_calibrate
+1. （不实际抓取不需要）手眼标定并发布“手眼”变换关系，关于Panda手眼标定和发布步骤[参看此处](https://github.com/Hymwgk/panda_hand_eye_calibrate)
    
     ```bash
    roslaunch panda_hand_eye_calibrate publish_panda_eob.launch
@@ -364,8 +364,7 @@ cd $HOME/code/
     catkin build
     ```
     
-6. 获取机械臂当前状态，并准备接收生成的抓取（以franka panda为例）需提前安装`panda_go_grasp`包，参见https://github.com/Hymwgk/panda_go_grasp
-    向ROS参数服务器发布一个参数，指明机械臂的当前是在移动状态还是已经返回home状态，机械臂在移动时，将暂时禁止gpd。
+6. 获取机械臂当前状态，并准备接收生成的抓取（以franka panda为例）需提前安装[panda_go_grasp包](https://github.com/Hymwgk/panda_go_grasp)，向ROS参数服务器发布一个参数，指明机械臂的当前是在移动状态还是已经返回home状态，机械臂在移动时，将暂时禁止gpd。
 
     ```bash
     roslaunch panda_go_grasp state_checker.launch  #anaconda2  python2
