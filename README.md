@@ -77,7 +77,7 @@ cd $HOME/code/
 
 1. Make sure in your Python environment do not have same package named ```meshpy``` or ```dexnet```.
 
-2. 确保已经安装了ROS以及相机预处理相关的程序包（https://github.com/Hymwgk/point_cloud_process）
+2. 确保已经安装了ROS以及相机预处理相关的[程序包](https://github.com/Hymwgk/point_cloud_process)
 
 3. Clone this repository:
     ```bash
