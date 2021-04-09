@@ -153,7 +153,7 @@ cd $HOME/code/
 
     如果你的Home盘分区不够大，希望换一个位置，可以:  
     >```bash
-    >cd $HOME/code/PointNetGPD/dex-net/apps  
+    >cd $HOME/code/PointNetGPD/apps  
     >vim generate-dataset-canny.py
     >```
     >修改YCB dataset 路径
@@ -329,7 +329,7 @@ cd $HOME/code/
     这部分就是实际使用PointNetGPD的部分，读取预处理后桌面上的目标区域点云，基于点云进行gpg，之后将夹爪内部的点云送入pointNet中打分，并以ROS消息的形式输出good grasp
     
     ```bash
-    cd $HOME/code/PointNetGPD/dex-net/apps
+    cd $HOME/code/PointNetGPD/apps
     python kinect2grasp.py   #anaconda2  python2  需要在conda2环境中也安装pytorch
     ```
     以下是用到的参数
@@ -384,7 +384,7 @@ cd $HOME/code/
 ## 辅助工具：查看之前采样的候选grasp pose（可跳过）
 - Visualization grasps
     ```bash
-    cd $HOME/code/PointNetGPD/dex-net/apps
+    cd $HOME/code/PointNetGPD/apps
     python read_grasps_from_file.py    #anaconda3  python3
     ```
 
@@ -394,7 +394,7 @@ cd $HOME/code/
   
 - Visualization object normals
     ```bash
-    cd $HOME/code/PointNetGPD/dex-net/apps
+    cd $HOME/code/PointNetGPD/apps
     python Cal_norm.py     #anaconda3  python3
     ```
 

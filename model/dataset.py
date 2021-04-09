@@ -22,10 +22,10 @@ except ImportError:
 
 # global config:全局的配置文件
 from autolab_core import YamlConfig
-yaml_config = YamlConfig(os.environ['HOME'] + "/code/PointNetGPD/dex-net/test/config.yaml")
+yaml_config = YamlConfig(os.environ['HOME'] + "/code/dex-net/test/config.yaml")
 gripper_name = 'robotiq_85'
 #加载夹爪
-gripper = RobotGripper.load(gripper_name, os.environ['HOME'] + "/code/PointNetGPD/dex-net/data/grippers")
+gripper = RobotGripper.load(gripper_name, os.environ['HOME'] + "/code/dex-net/data/grippers")
 ags = GpgGraspSamplerPcl(gripper, yaml_config)
 
 

@@ -6,7 +6,7 @@ import pickle
 import sys
 
 print(sys.path)
-sys.path.append('/home/wgk/code/PointNetGPD/PointNetGPD/model')
+#sys.path.append('/home/wgk/code/PointNetGPD/model')
 
 
 import torch
@@ -52,7 +52,7 @@ parser.add_argument('--load-model', type=str, default='')
 parser.add_argument('--load-epoch', type=int, default=-1)
 parser.add_argument('--model-path', type=str, default='./assets/learned_models',
                    help='pre-trained model path')
-parser.add_argument('--data-path', type=str, default='~/dataset/PointNetGPD/', help='data path')
+parser.add_argument('--data-path', type=str, default='/home/wgk/dataset/PointNetGPD', help='data path')
 #设置每隔多少次迭代，就打印出来一次loss还有训练进度
 parser.add_argument('--log-interval', type=int, default=10)
 #保存间隔，设置每隔几个epoch就保存一次模型，比如epoch=10就是训练10轮之后就保存当前的训练模型
