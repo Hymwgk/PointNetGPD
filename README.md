@@ -8,6 +8,8 @@ typora-root-url: ./
 
 PointNetGPD (ICRA 2019, [arXiv](https://arxiv.org/abs/1809.06267)) is an end-to-end grasp evaluation model to address the challenging problem of localizing robot grasp configurations directly from the point cloud.
 
+一个题外话：关于抓取采样的问题，很多人希望在混杂场景中也能够进行6-Dof候选抓取的采样；目前这种采样方式考虑到标注成本，一般是在虚拟场景中采样，然后用机理法标注；我个人也开源了一个[“半成品的”](https://github.com/Hymwgk/simulate_dataset_generation)仓库，有时间有精力的同学可以看看，也许有些代码片段可以帮助到你; 由于是自己手写的，很多是从小白开始写的，希望也许会有一些借鉴的价值吧。
+
 简单介绍一下PointNet的代码流程：  
 - 离线阶段
 
